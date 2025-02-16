@@ -66,18 +66,30 @@
             font-size: 1.1em;
             color: #888;
         }
-        #alerts {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #ffe6e6;
-            border: 1px solid #e63946;
-            color: #e63946;
-            font-size: 1.1em;
-            border-radius: 5px;
-        }
+		#alerts {
+			margin-top: 20px;
+			padding: 15px;
+			background-color: #ffe6e6;
+			border: 1px solid #e63946;
+			color: #e63946;
+			font-size: 1.1em;
+			border-radius: 5px;
+			max-width: 600px; /* Limit the width */
+			margin: 20px auto; /* Center the alert box */
+		}
         #alerts ul {
             list-style-type: none;
             padding: 0;
+        }
+        #earthcam-container {
+            margin-top: 20px;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        #youtube-video {
+            margin-top: 20px;
+            max-width: 800px;
+            margin: 20px auto;
         }
     </style>
 </head>
@@ -88,6 +100,14 @@
     <div id="weather-map"></div>
     <div id="last-updated"></div> <!-- This will display the date and time -->
     <div id="alerts"></div> <!-- Alerts section -->
+
+<!-- YouTube Video Embed with Header -->
+<div id="youtube-video" style="max-width: 800px; margin: 20px auto; position: relative;">
+    <h2 style="color: #2d6a4f; font-size: 1.8em; margin: 10px 0; text-align: center;">
+        Kansas City Union Station
+    </h2>
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/Ezm7jMHsx5A?autoplay=1" frameborder="0" allow="autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
 
     <script>
         // Function to convert wind direction (0-360) to cardinal direction
@@ -113,45 +133,45 @@
             return now.toLocaleString('en-US', options);
         }
 
-// Fetch weather data
-		function fetchWeather() {
-			fetch('/weather')
-			.then(response => response.json())
-.then(data => {
-    console.log(data);  // Log the entire response to inspect the data structure
-    const container = document.getElementById('weather-container');
-    const lastUpdated = document.getElementById('last-updated');
-    
-    if (data.error) {
-        container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
-    } else {
-        container.style.display = 'block'; // Show the container
-        container.innerHTML = `
-            <p><strong>Station ID:</strong> ${data.stationID}</p>
-            <p><strong>Temperature:</strong> ${data.temperature}°F</p>
-            <p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
-            <p><strong>Humidity:</strong> ${data.weather.humidity}%</p>
-            <p><strong>Wind Speed:</strong> ${data.weather.windSpeed} mph</p>
-            <p><strong>Wind Direction:</strong> ${data.windDir}</p>
-            <p><strong>Pressure:</strong> ${data.weather.pressure} inHg</p>
-            <p><strong>Precip Rate:</strong> ${data.rainForecast} inches</p>
-            <p><strong>Total Rain:</strong> ${data.totalRain} inches</p>
-        `;
-        // Display the last updated time
-        lastUpdated.innerHTML = `<p><strong>Last Updated:</strong> ${formatDateTime()}</p>`;
-    }
+        // Fetch weather data
+        function fetchWeather() {
+            fetch('/weather')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);  // Log the entire response to inspect the data structure
+                    const container = document.getElementById('weather-container');
+                    const lastUpdated = document.getElementById('last-updated');
+                    
+                    if (data.error) {
+                        container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                    } else {
+                        container.style.display = 'block'; // Show the container
+                        container.innerHTML = `
+                            <p><strong>Station ID:</strong> ${data.stationID}</p>
+                            <p><strong>Temperature:</strong> ${data.temperature}°F</p>
+                            <p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
+                            <p><strong>Humidity:</strong> ${data.weather.humidity}%</p>
+                            <p><strong>Wind Speed:</strong> ${data.weather.windSpeed} mph</p>
+                            <p><strong>Wind Direction:</strong> ${data.windDir}</p>
+                            <p><strong>Pressure:</strong> ${data.weather.pressure} inHg</p>
+                            <p><strong>Precip Rate:</strong> ${data.rainForecast} inches</p>
+                            <p><strong>Total Rain:</strong> ${data.totalRain} inches</p>
+                        `;
+                        // Display the last updated time
+                        lastUpdated.innerHTML = `<p><strong>Last Updated:</strong> ${formatDateTime()}</p>`;
+                    }
 
-    // Fetch weather alerts
-    fetchWeatherAlerts();
-})
-        .catch(error => {
-            const container = document.getElementById('weather-container');
-            const lastUpdated = document.getElementById('last-updated');
-            container.innerHTML = `<p class="error">Error fetching weather data.</p>`;
-            lastUpdated.innerHTML = ''; // Hide last updated time if there's an error
-            console.error('Error:', error);
-        });
-}
+                    // Fetch weather alerts
+                    fetchWeatherAlerts();
+                })
+                .catch(error => {
+                    const container = document.getElementById('weather-container');
+                    const lastUpdated = document.getElementById('last-updated');
+                    container.innerHTML = `<p class="error">Error fetching weather data.</p>`;
+                    lastUpdated.innerHTML = ''; // Hide last updated time if there's an error
+                    console.error('Error:', error);
+                });
+        }
 
         // Fetch weather alerts
         function fetchWeatherAlerts() {
@@ -189,3 +209,4 @@
     </script>
 </body>
 </html>
+
