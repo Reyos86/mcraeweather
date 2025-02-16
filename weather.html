@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            margin: 50px; 
+            background-color: #f4f4f9; 
+            color: #333;
+        }
+        h1 {
+            color: #2d6a4f; /* Soft green */
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #2d6a4f; /* Soft green */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #218c45; /* Darker green */
+        }
+        #weather-container { 
+            margin-top: 20px; 
+            padding: 20px; 
+            border: 1px solid #ccc; 
+            border-radius: 10px;
+            background-color: #ffffff; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+            display: none; /* Initially hide the container */
+            text-align: left;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        #weather-container p {
+            font-size: 1.1em;
+            line-height: 1.6em;
+            margin: 5px 0;
+        }
+        #weather-container strong {
+            color: #2d6a4f;
+        }
+        #weather-map { 
+            margin-top: 20px; 
+        }
+        #weather-map img { 
+            width: 100%; 
+            max-width: 600px; 
+            border-radius: 10px; 
+        }
+        .error {
+            color: #e63946; /* Red for errors */
+        }
+        #last-updated {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #888;
+        }
+        #alerts {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ffe6e6;
+            border: 1px solid #e63946;
+            color: #e63946;
+            font-size: 1.1em;
+            border-radius: 5px;
+        }
+        #alerts ul {
+            list-style-type: none;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>McRae Weather Station Data</h1>
+    <button onclick="fetchWeather()">Get Weather</button>
+    <div id="weather-container"></div> <!-- Hidden initially -->
+    <div id="weather-map"></div>
+    <div id="last-updated"></div> <!-- This will display the date and time -->
+    <div id="alerts"></div> <!-- Alerts section -->
+
+    <script>
+        // Function to convert wind direction (0-360) to cardinal direction
+        function windDirectionToCardinal(degrees) {
+            const directions = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
+            const index = Math.floor((degrees + 22.5) / 45);
+            return directions[index % 8]; // Ensure the index wraps around
+        }
+
+        // Function to format the current date and time
+        function formatDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12: true 
+            };
+            return now.toLocaleString('en-US', options);
+        }
+
+// Fetch weather data
+		function fetchWeather() {
+			fetch('/weather')
+			.then(response => response.json())
+.then(data => {
+    console.log(data);  // Log the entire response to inspect the data structure
+    const container = document.getElementById('weather-container');
+    const lastUpdated = document.getElementById('last-updated');
+    
+    if (data.error) {
+        container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+    } else {
+        container.style.display = 'block'; // Show the container
+        container.innerHTML = `
+            <p><strong>Station ID:</strong> ${data.stationID}</p>
+            <p><strong>Temperature:</strong> ${data.temperature}°F</p>
+            <p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
+            <p><strong>Humidity:</strong> ${data.weather.humidity}%</p>
+            <p><strong>Wind Speed:</strong> ${data.weather.windSpeed} mph</p>
+            <p><strong>Wind Direction:</strong> ${data.windDir}</p>
+            <p><strong>Pressure:</strong> ${data.weather.pressure} inHg</p>
+            <p><strong>Precip Rate:</strong> ${data.rainForecast} inches</p>
+            <p><strong>Total Rain:</strong> ${data.totalRain} inches</p>
+        `;
+        // Display the last updated time
+        lastUpdated.innerHTML = `<p><strong>Last Updated:</strong> ${formatDateTime()}</p>`;
+    }
+
+    // Fetch weather alerts
+    fetchWeatherAlerts();
+})
+        .catch(error => {
+            const container = document.getElementById('weather-container');
+            const lastUpdated = document.getElementById('last-updated');
+            container.innerHTML = `<p class="error">Error fetching weather data.</p>`;
+            lastUpdated.innerHTML = ''; // Hide last updated time if there's an error
+            console.error('Error:', error);
+        });
+}
+
+        // Fetch weather alerts
+        function fetchWeatherAlerts() {
+            const lat = 37.064; // Latitude for Sunnyvale, CA (example)
+            const lon = -94.501; // Longitude for Sunnyvale, CA (example)
+            const alertContainer = document.getElementById('alerts');
+            
+            fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.features.length > 0) {
+                        let alertHTML = '<h2>Active Weather Alerts</h2><ul>';
+                        data.features.forEach(alert => {
+                            alertHTML += `<li><strong>${alert.properties.event}</strong>: ${alert.properties.headline}</li>`;
+                        });
+                        alertHTML += '</ul>';
+                        alertContainer.innerHTML = alertHTML;
+                    } else {
+                        alertContainer.innerHTML = '<p>No active weather alerts.</p>';
+                    }
+                })
+                .catch(error => {
+                    alertContainer.innerHTML = '<p class="error">Error fetching weather alerts.</p>';
+                    console.error('Error:', error);
+                });
+        }
+
+        // Update weather data every 5 minutes (300,000 milliseconds)
+        setInterval(fetchWeather, 300000); // 5 minutes = 300,000 milliseconds
+
+        // Optional: Call fetchWeather initially when the page loads
+        window.onload = function() {
+            fetchWeather();
+        };
+    </script>
+</body>
+</html>
