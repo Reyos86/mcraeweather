@@ -13,12 +13,12 @@
             color: #333;
         }
         h1 {
-            color: #2d6a4f; /* Soft green */
+            color: #2d6a4f;
             font-size: 2.5em;
             margin-bottom: 20px;
         }
         button {
-            background-color: #2d6a4f; /* Soft green */
+            background-color: #2d6a4f;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -28,7 +28,7 @@
             margin-bottom: 20px;
         }
         button:hover {
-            background-color: #218c45; /* Darker green */
+            background-color: #218c45;
         }
         #weather-container { 
             margin-top: 20px; 
@@ -37,116 +37,96 @@
             border-radius: 10px;
             background-color: #ffffff; 
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-            display: none; /* Initially hide the container */
+            display: none;
             text-align: left;
             max-width: 600px;
             margin: 20px auto;
         }
-        #weather-container p {
-            font-size: 1.1em;
-            line-height: 1.6em;
-            margin: 5px 0;
-        }
-        #weather-container strong {
-            color: #2d6a4f;
-        }
-        #weather-map { 
-            margin-top: 20px; 
-        }
-        #weather-map img { 
-            width: 100%; 
-            max-width: 600px; 
-            border-radius: 10px; 
-        }
-        .error {
-            color: #e63946; /* Red for errors */
-        }
-        #last-updated {
+        #alerts, #forecast-container {
             margin-top: 20px;
-            font-size: 1.1em;
-            color: #888;
+            padding: 15px;
+            border-radius: 5px;
+            max-width: 600px;
+            margin: 20px auto;
         }
-		#alerts {
-			margin-top: 20px;
-			padding: 15px;
-			background-color: #ffe6e6;
-			border: 1px solid #e63946;
-			color: #e63946;
-			font-size: 1.1em;
-			border-radius: 5px;
-			max-width: 600px; /* Limit the width */
-			margin: 20px auto; /* Center the alert box */
-		}
-        #alerts ul {
+        #alerts {
+            background-color: #ffe6e6;
+            border: 1px solid #e63946;
+            color: #e63946;
+            font-size: 1.1em;
+        }
+        #forecast-container {
+            background-color: #e3f2fd;
+            border: 1px solid #90caf9;
+            color: #1565c0;
+            font-size: 1.1em;
+        }
+        #forecast-container h2 {
+            color: #0d47a1;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        #forecast-container ul {
             list-style-type: none;
             padding: 0;
+            margin: 0;
         }
-        #earthcam-container {
-            margin-top: 20px;
-            max-width: 600px;
-            margin: 20px auto;
+        #forecast-container li {
+            background-color: #e1f5fe;
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        #youtube-video {
-            margin-top: 20px;
-            max-width: 600px;
-            margin: 20px auto;
+        #forecast-container li strong {
+            color: #1565c0;
+        }
+        #last-updated {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <h1>McRae Weather Station Data</h1>
     <button onclick="fetchWeather()">Get Weather</button>
-    <div id="weather-container"></div> <!-- Hidden initially -->
-    <div id="weather-map"></div>
-    <div id="last-updated"></div> <!-- This will display the date and time -->
-    <div id="alerts"></div> <!-- Alerts section -->
-
-<!-- YouTube Video Embed with Header -->
-<div id="youtube-video" style="max-width: 600px; margin: 20px auto; position: relative;">
-    <h2 style="color: #2d6a4f; font-size: 1.8em; margin: 10px 0; text-align: center;">
-        Kansas City Union Station
-    </h2>
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/Ezm7jMHsx5A" frameborder="0" allow="encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
+    <div id="weather-container"></div>
+    <div id="alerts"></div>
+    <div id="forecast-container"></div>
+    <p id="last-updated"></p> <!-- Last Updated Timestamp -->
 
     <script>
-        // Function to convert wind direction (0-360) to cardinal direction
-        function windDirectionToCardinal(degrees) {
-            const directions = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
-            const index = Math.floor((degrees + 22.5) / 45);
-            return directions[index % 8]; // Ensure the index wraps around
-        }
-
-        // Function to format the current date and time
-        function formatDateTime() {
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit', 
-                hour12: true 
-            };
-            return now.toLocaleString('en-US', options);
-        }
-
-        // Fetch weather data
         function fetchWeather() {
             fetch('/weather')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    console.log(data);  // Log the entire response to inspect the data structure
+                    console.log('Weather Data:', data); // Debugging
+
                     const container = document.getElementById('weather-container');
-                    const lastUpdated = document.getElementById('last-updated');
-                    
                     if (data.error) {
                         container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
                     } else {
-                        container.style.display = 'block'; // Show the container
-                        container.innerHTML = `
+                        container.style.display = 'block';
+
+                        const iconCode = (data.iconCode && data.iconCode.length > 1 && data.iconCode[1] !== null) ? data.iconCode[1] : "default";
+
+                        const currentIcon = document.getElementById('weather-icon');
+                        if (currentIcon) {
+                            currentIcon.src = `/static/icons/${iconCode}.png`;
+                            currentIcon.style.display = 'block';
+                        } else {
+                            container.innerHTML = `
+                                <img id="weather-icon" src="/static/icons/${iconCode}.png" alt="Weather Icon" style="width: 70px; height: 50px;">
+                            ` + container.innerHTML;
+                        }
+
+                        container.innerHTML += `
                             <p><strong>Station ID:</strong> ${data.stationID}</p>
                             <p><strong>Temperature:</strong> ${data.temperature}°F</p>
                             <p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
@@ -157,32 +137,35 @@
                             <p><strong>Precip Rate:</strong> ${data.rainForecast} inches</p>
                             <p><strong>Total Rain:</strong> ${data.totalRain} inches</p>
                         `;
-                        // Display the last updated time
-                        lastUpdated.innerHTML = `<p><strong>Last Updated:</strong> ${formatDateTime()}</p>`;
-                    }
 
-                    // Fetch weather alerts
+                        updateLastUpdatedTime(); // Update timestamp
+                    }
                     fetchWeatherAlerts();
+                    fetchWeatherForecast();
                 })
                 .catch(error => {
-                    const container = document.getElementById('weather-container');
-                    const lastUpdated = document.getElementById('last-updated');
-                    container.innerHTML = `<p class="error">Error fetching weather data.</p>`;
-                    lastUpdated.innerHTML = ''; // Hide last updated time if there's an error
+                    document.getElementById('weather-container').innerHTML = `<p class="error">Error fetching weather data: ${error.message}</p>`;
                     console.error('Error:', error);
                 });
         }
 
-        // Fetch weather alerts
+        function updateLastUpdatedTime() {
+            const now = new Date();
+            const formattedTime = now.toLocaleString();
+            document.getElementById('last-updated').innerText = `Last Updated: ${formattedTime}`;
+        }
+
         function fetchWeatherAlerts() {
-            const lat = 37.064; // Latitude for Sunnyvale, CA (example)
-            const lon = -94.501; // Longitude for Sunnyvale, CA (example)
+            const lat = 37.064;
+            const lon = -94.501;
             const alertContainer = document.getElementById('alerts');
-            
+
             fetch(`https://api.weather.gov/alerts/active?point=${lat},${lon}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.features.length > 0) {
+                    console.log('Weather Alerts:', data);
+
+                    if (data.features && data.features.length > 0) {
                         let alertHTML = '<h2>Active Weather Alerts</h2><ul>';
                         data.features.forEach(alert => {
                             alertHTML += `<li><strong>${alert.properties.event}</strong>: ${alert.properties.headline}</li>`;
@@ -199,10 +182,40 @@
                 });
         }
 
-        // Update weather data every 5 minutes (300,000 milliseconds)
-        setInterval(fetchWeather, 300000); // 5 minutes = 300,000 milliseconds
+        function fetchWeatherForecast() {
+            fetch('/forecast')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Forecast Data:', data);
 
-        // Optional: Call fetchWeather initially when the page loads
+                    const forecastContainer = document.getElementById('forecast-container');
+                    if (data.error) {
+                        forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                    } else {
+                        let forecastHTML = '<h2>Weather Forecast</h2><ul>';
+                        data.forEach(day => {
+                            let iconCode = day.iconCode !== null ? day.iconCode : "default";
+                            const iconURL = `/static/icons/${iconCode}.png`;
+
+                            forecastHTML += `
+                                <li>
+                                    <strong>${day.day}:</strong> ${day.narrative}<br>
+                                    <img src="${iconURL}" alt="Weather Icon" style="width: 50px; height: 50px;">
+                                    <br>High: ${day.tempMax !== null ? day.tempMax + "°F" : "N/A"} | Low: ${day.tempMin !== null ? day.tempMin + "°F" : "N/A"}
+                                </li>
+                            `;
+                        });
+
+                        forecastHTML += '</ul>';
+                        forecastContainer.innerHTML = forecastHTML;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
+                    console.error('Error:', error);
+                });
+        }
+
         window.onload = function() {
             fetchWeather();
         };
