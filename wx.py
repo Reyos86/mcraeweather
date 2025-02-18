@@ -1,5 +1,6 @@
 import math
 from flask import Flask, request, jsonify, render_template
+import json
 import requests
 import os
 import threading
@@ -58,9 +59,6 @@ def get_weather():
     
     observation = observations[0]  # Get the first observation safely
 
-    # Extract icon code (safely)
-    # icon_code = observation.get("iconCode", "default")
-
     wind_chill = observation["imperial"].get("windChill", "N/A")
     precip_rate = observation["imperial"].get("precipRate", "N/A")
     precip_total = observation["imperial"].get("precipTotal", "N/A")
@@ -75,9 +73,7 @@ def get_weather():
     xtile, ytile = lat_lon_to_tile(lat, lon, zoom_level)
 
     map_url = f"https://tile.openweathermap.org/map/precipitation_new/{zoom_level}/{xtile}/{ytile}.png?appid={OWM_API_KEY}"
-    
-  #  print("Icon Code from API:", icon_code)
-    
+
     return jsonify({
         "stationID": observation["stationID"],
         "temperature": observation["imperial"]["temp"],
@@ -91,17 +87,21 @@ def get_weather():
         "totalRain": precip_total,
         "windDir": wind_cardinal,
         "weatherMap": map_url,
-      #  "icon_url": f"/static/icons/{icon_code}.png"  # Local Icons
     })
 
 
 @app.route('/forecast')
 def get_forecast():
-    lat, lon = 37.0842, -94.5133  # Example coordinates
-    forecast_url = f'https://api.weather.com/v3/wx/forecast/daily/5day?postalKey=64804:US&units=e&language=en-US&format=json&apiKey=497e85fd58f14e39be85fd58f1ee3956'
+    # Example coordinates (you can update these as needed)
+    lat, lon = 37.0842, -94.5133  
+    forecast_url = f'https://api.weather.com/v3/wx/forecast/daily/5day?postalKey=64804:US&units=e&language=en-US&format=json&apiKey={WUNDER_API_KEY}'
 
     response = requests.get(forecast_url)
     data = response.json()
+
+    # **DEBUG PRINT - Print the entire API response**
+    print("\n=== FULL FORECAST API RESPONSE ===")
+    print(json.dumps(data, indent=2))  # Pretty-print the entire response
 
     if 'dayOfWeek' not in data or len(data['dayOfWeek']) == 0:
         return jsonify({"error": "No forecast data available"}), 400
@@ -116,42 +116,31 @@ def get_forecast():
     daypart_names = dayparts[0].get('daypartName', [])
     icon_codes = dayparts[0].get('iconCode', [])
 
-    print("\n=== DEBUG: Checking API Data ===")
-    print(f"Days of week: {days_of_week}")
-    print(f"Daypart names: {daypart_names}")
-    print(f"Icon codes: {icon_codes}")
-
+    # Loop through the forecast days
     for i in range(len(days_of_week)):
         day = days_of_week[i]
         narrative = data.get('narrative', [])[i] if i < len(data.get('narrative', [])) else "No narrative"
-        temp_max = data.get('temperatureMax', [])[i] if i < len(data.get('temperatureMax', [])) else "N/A"
-        temp_min = data.get('temperatureMin', [])[i] if i < len(data.get('temperatureMin', [])) else "N/A"
 
-        icon_code = "default"  # Default in case no match is found
+        temp_max_values = data.get('temperatureMax', [])
+        temp_min_values = data.get('temperatureMin', [])
 
-        # Find the first valid iconCode for the current day
-        for j in range(len(daypart_names)):
-            part = daypart_names[j]
-            if part and icon_codes[j] is not None:
-                if day.lower() in part.lower():  # Match part of the name
-                    icon_code = icon_codes[j]
-                    break  # Stop after first valid match
-            elif part is None and icon_codes[j] is not None:
-                # If `None`, skip and move to the next available icon
-                icon_code = icon_codes[j]
+        temp_max = temp_max_values[i] if i < len(temp_max_values) and temp_max_values[i] is not None else "N/A"
+        temp_min = temp_min_values[i] if i < len(temp_min_values) and temp_min_values[i] is not None else "N/A"
 
-        print(f"Processed {day}: icon={icon_code}")  # Debug each day's icon
+        # Get the corresponding icon for each day
+        icon_code = icon_codes[i] if i < len(icon_codes) else "default"
+
+        print(f"Processed {day}: icon={icon_code}, tempMax={temp_max}, tempMin={temp_min}")  # Debug output
 
         forecast_data.append({
             "day": day,
             "narrative": narrative,
-            "iconCode": icon_code,  # This should be dynamically assigned
+            "iconCode": icon_code,
             "tempMax": temp_max,
             "tempMin": temp_min
         })
 
     return jsonify(forecast_data)
-
 
 
 # Function to run Flask on port 5000
@@ -166,3 +155,4 @@ if __name__ == "__main__":
     # Run both instances on separate threads
     threading.Thread(target=run_on_5000).start()
     threading.Thread(target=run_on_10000).start()
+
