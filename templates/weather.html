@@ -45,50 +45,64 @@
         }
         #weather-container { display: none; }
 
-        /* Alerts Banner */
-        #alerts-banner {
-            width: 100%;
-            background-color: #b71c1c;  /* Reddish background */
-            color: #fff;  /* White text for contrast */
-            font-size: 1.5em;  /* Larger text size */
-            padding: 15px 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-            overflow: hidden;
-            text-align: center;
-            display: none; /* Initially hidden */
-            opacity: 0;  /* Start with opacity 0 */
-            animation: fade-in 0.5s ease-out forwards, scroll-left 40s linear infinite;
-        }
-        @keyframes fade-in {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-        #alerts-list {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            white-space: nowrap;
-            display: inline-block;
-        }
-        #alerts-list li {
-            display: inline-block;
-            padding: 0 30px;
-        }
-        @keyframes scroll-left {
-            from {
-                transform: translateX(50%); /* Start closer to the center */
-            }
-            to {
-                transform: translateX(-100%); /* End off the left side */
-            }
-        }
+		/* Alerts Banner */
+		#alerts-banner {
+			width: 100%;
+			background-color: #b71c1c;
+			color: #fff;
+			font-size: 1.5em;
+			padding: 15px 0;
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: 1000;
+			text-align: center;
+			display: none;
+			opacity: 0;
+			animation: fade-in 0.5s ease-out forwards;
+			overflow: hidden;
+			white-space: nowrap;
+		}
+
+		/* Fading effect */
+		@keyframes fade-in {
+			from {
+				opacity: 0;
+			}
+			to {
+				opacity: 1;
+			}
+		}
+		/* Scrolling text container */
+		#scrolling-text {
+			display: inline-block;
+			white-space: nowrap;
+			animation: scroll-left 20s linear infinite;
+		}
+
+		/* Ensures alerts appear in a single line */
+		#alerts-list {
+			display: inline;
+			padding: 0;
+			margin: 0;
+			list-style: none;
+		}
+
+		/* Ensures list items appear in a row */
+		#alerts-list li {
+			display: inline;
+			margin-right: 40px; /* Adds space between alerts */
+		}
+
+		/* Text scrolling animation */
+		@keyframes scroll-left {
+			from {
+				transform: translateX(100%);
+			}
+			to {
+				transform: translateX(-100%);
+			}
+		}
 
         /* Slower scrolling speed on mobile */
         @media (max-width: 600px) {
@@ -140,11 +154,13 @@
     <div id="weather-container"></div>
     
     <!-- Alerts Banner -->
-    <div id="alerts-banner">
+<div id="alerts-banner">
+    <div id="scrolling-text">
         <ul id="alerts-list">
             <!-- Weather Alerts will be dynamically inserted here -->
         </ul>
     </div>
+</div>
 
     <div id="forecast-container"></div>
 
