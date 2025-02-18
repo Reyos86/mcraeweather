@@ -107,7 +107,7 @@
         /* Slower scrolling speed on mobile */
         @media (max-width: 600px) {
             #alerts-list {
-                animation: scroll-left 15s linear infinite;  /* Slower scroll for mobile */
+                animation: scroll-left 30s linear infinite;  /* Slower scroll for mobile */
             }
         }
 
@@ -161,7 +161,16 @@
         </ul>
     </div>
 </div>
-
+    <!-- Live Camera Feed (Placed Just Above Forecast Container) -->
+    <h2>Live Weather Camera</h2>
+    <iframe 
+        src="https://v.angelcam.com/iframe?v=j3y783jzlm&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJkb21haW4iOiJqb3BsaW4tYWlycG9ydC5jbGljazJzdHJlYW0uY29tIiwiY2FtZXJhX2lkIjoxMDYxMjEsImV4cCI6MTczOTk5NTEyNn0.pU9jOz0de9r7ElN4R2jHjpFEq5bieDFITjWqqOgmWcE&autoplay=1" 
+        width="640" 
+        height="360" 
+        frameborder="0" 
+        allowfullscreen>
+    </iframe>
+	
     <div id="forecast-container"></div>
 
     <script>
@@ -277,17 +286,17 @@
             .catch(() => {
                 document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
             });
-    }
+	}
 
     window.onload = fetchWeather;
-
-    	    // Auto-refresh every 5 minutes (300,000 milliseconds)
+	
+	    // Auto-refresh every 5 minutes (300,000 milliseconds)
     setInterval(fetchWeather, 300000);
-	    
+	
+	
 </script>
 </body>
 </html>
-
 
 
 
