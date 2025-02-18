@@ -59,6 +59,16 @@
             overflow: hidden;
             text-align: center;
             display: none; /* Initially hidden */
+            opacity: 0;  /* Start with opacity 0 */
+            animation: fade-in 0.5s ease-out forwards, scroll-left 40s linear infinite;
+        }
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
         }
         #alerts-list {
             list-style-type: none;
@@ -66,7 +76,6 @@
             padding: 0;
             white-space: nowrap;
             display: inline-block;
-            animation: scroll-left 40s linear infinite;  /* Slower scroll */
         }
         #alerts-list li {
             display: inline-block;
@@ -74,7 +83,7 @@
         }
         @keyframes scroll-left {
             from {
-                transform: translateX(100%); /* Start slightly off-screen */
+                transform: translateX(50%); /* Start closer to the center */
             }
             to {
                 transform: translateX(-100%); /* End off the left side */
@@ -84,7 +93,7 @@
         /* Slower scrolling speed on mobile */
         @media (max-width: 600px) {
             #alerts-list {
-                animation: scroll-left 45s linear infinite;  /* Slower scroll for mobile */
+                animation: scroll-left 35s linear infinite;  /* Slower scroll for mobile */
             }
         }
 
@@ -249,6 +258,7 @@
     </script>
 </body>
 </html>
+
 
 
 
