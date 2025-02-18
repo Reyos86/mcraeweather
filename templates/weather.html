@@ -134,40 +134,40 @@
     <div id="forecast-container"></div>
 
     <script>
-        function fetchWeather() {
-            fetch('/weather')
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('weather-container');
-                    if (data.error) {
-                        container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
-                    } else {
-                        container.style.display = 'block';
+		function fetchWeather() {
+			fetch('/weather')
+				.then(response => response.json())
+				.then(data => {
+					const container = document.getElementById('weather-container');
+					if (data.error) {
+						container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+					} else {
+						container.style.display = 'block';
 
-                        const iconCode = data.iconCode && data.iconCode[1] ? data.iconCode[1] : "default";
+						// Placeholder for icon update, will be replaced when forecast loads
+						container.innerHTML = ` 
+							<img id="weather-icon" src="/static/icons/default.png" alt="Weather Icon" style="width: 70px; height: 50px;">
+							<p><strong>Station ID:</strong> ${data.stationID}</p>
+							<p><strong>Temperature:</strong> ${data.temperature}°F</p>
+							<p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
+							<p><strong>Humidity:</strong> ${data.weather.humidity}%</p>
+							<p><strong>Wind Speed:</strong> ${data.weather.windSpeed} mph</p>
+							<p><strong>Wind Direction:</strong> ${data.windDir}</p>
+							<p><strong>Pressure:</strong> ${data.weather.pressure} inHg</p>
+							<p><strong>Precip Rate:</strong> ${data.rainForecast} inches</p>
+							<p><strong>Total Rain:</strong> ${data.totalRain} inches</p>
+						`;
 
-                        container.innerHTML = ` 
-                            <img id="weather-icon" src="/static/icons/${iconCode}.png" alt="Weather Icon" style="width: 70px; height: 50px;">
-                            <p><strong>Station ID:</strong> ${data.stationID}</p>
-                            <p><strong>Temperature:</strong> ${data.temperature}°F</p>
-                            <p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
-                            <p><strong>Humidity:</strong> ${data.weather.humidity}%</p>
-                            <p><strong>Wind Speed:</strong> ${data.weather.windSpeed} mph</p>
-                            <p><strong>Wind Direction:</strong> ${data.windDir}</p>
-                            <p><strong>Pressure:</strong> ${data.weather.pressure} inHg</p>
-                            <p><strong>Precip Rate:</strong> ${data.rainForecast} inches</p>
-                            <p><strong>Total Rain:</strong> ${data.totalRain} inches</p>
-                        `;
+						updateLastUpdatedTime();
+					}
+					fetchWeatherAlerts();
+					fetchWeatherForecast(); // Fetch forecast after weather
+				})
+				.catch(error => {
+					document.getElementById('weather-container').innerHTML = `<p class="error">Error fetching weather data: ${error.message}</p>`;
+				});
+		}
 
-                        updateLastUpdatedTime();
-                    }
-                    fetchWeatherAlerts();
-                    fetchWeatherForecast();
-                })
-                .catch(error => {
-                    document.getElementById('weather-container').innerHTML = `<p class="error">Error fetching weather data: ${error.message}</p>`;
-                });
-        }
 
         function updateLastUpdatedTime() {
             const now = new Date();
@@ -208,36 +208,41 @@
                 });
         }
 
-        function fetchWeatherForecast() {
-            fetch('/forecast')
-                .then(response => response.json())
-                .then(data => {
-                    const forecastContainer = document.getElementById('forecast-container');
-                    if (data.error) {
-                        forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
-                    } else {
-                        let forecastHTML = '<h2>Weather Forecast</h2><ul>';
+    function fetchWeatherForecast() {
+        fetch('/forecast')
+            .then(response => response.json())
+            .then(data => {
+                const forecastContainer = document.getElementById('forecast-container');
+                if (data.error) {
+                    forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+                } else {
+                    let forecastHTML = '<h2>Weather Forecast</h2><ul>';
+                    let todayIcon = "default.png"; // Default icon
 
-                        data.forEach(day => {
-                            const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
+                    const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-                            forecastHTML += `
-                                <li>
-                                    <strong>${day.day}:</strong> ${day.narrative}<br>
-                                    <img src="${iconURL}" alt="Weather Icon" style="width: 50px; height: 50px;">
-                                    <br>High: ${day.tempMax ?? "N/A"}°F | Low: ${day.tempMin ?? "N/A"}°F
-                                </li>
-                            `;
-                        });
+                    data.forEach(day => {
+                        const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
 
-                        forecastHTML += '</ul>';
-                        forecastContainer.innerHTML = forecastHTML;
-                    }
-                })
-                .catch(() => {
-                    document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
-                });
-        }
+                        if (day.day === today) {
+                            todayIcon = day.iconCode ? `${day.iconCode}.png` : "default.png"; // Set today's icon
+                        }
+
+                        forecastHTML += `
+                            <li>
+                                <strong>${day.day}:</strong> ${day.narrative}<br>
+                                <img src="${iconURL}" alt="Weather Icon" style="width: 50px; height: 50px;">
+                                <br>High: ${day.tempMax ?? "N/A"}°F | Low: ${day.tempMin ?? "N/A"}°F
+                            </li>
+                        `;
+                    });
+
+                    forecastHTML += '</ul>';
+                    forecastContainer.innerHTML = forecastHTML;
+
+                    // Update the main weather icon dynamically
+                    document.getElementById('weather-icon').src = `/static/icons/${todayIcon}`;
+                }
 
         window.onload = fetchWeather;
     </script>
