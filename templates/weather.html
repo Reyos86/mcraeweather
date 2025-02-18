@@ -280,7 +280,11 @@
     }
 
     window.onload = fetchWeather;
-    </script>
+
+    	    // Auto-refresh every 5 minutes (300,000 milliseconds)
+    setInterval(fetchWeather, 300000);
+	    
+</script>
 </body>
 </html>
 
