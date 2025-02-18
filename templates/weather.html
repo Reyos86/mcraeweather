@@ -74,17 +74,17 @@
         }
         @keyframes scroll-left {
             from {
-                transform: translateX(100%);
+                transform: translateX(100%); /* Start slightly off-screen */
             }
             to {
-                transform: translateX(-100%);
+                transform: translateX(-100%); /* End off the left side */
             }
         }
 
         /* Slower scrolling speed on mobile */
         @media (max-width: 600px) {
             #alerts-list {
-                animation: scroll-left 60s linear infinite;  /* Slower scroll for mobile */
+                animation: scroll-left 45s linear infinite;  /* Slower scroll for mobile */
             }
         }
 
@@ -249,5 +249,6 @@
     </script>
 </body>
 </html>
+
 
 
