@@ -16,6 +16,7 @@
             color: #1db954;
             font-size: 2.5em;
             margin-bottom: 20px;
+            margin-top: 80px; /* Add margin to prevent the banner from covering the header */
         }
         button {
             background-color: #1b5e20;
@@ -77,6 +78,13 @@
             }
             to {
                 transform: translateX(-100%);
+            }
+        }
+
+        /* Slower scrolling speed on mobile */
+        @media (max-width: 600px) {
+            #alerts-list {
+                animation: scroll-left 60s linear infinite;  /* Slower scroll for mobile */
             }
         }
 
@@ -241,3 +249,4 @@
     </script>
 </body>
 </html>
+
