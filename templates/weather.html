@@ -32,7 +32,7 @@
             background-color: #388e3c;
             transform: scale(1.05);
         }
-        #weather-container, #alerts, #forecast-container { 
+        #weather-container, #forecast-container { 
             margin-top: 20px; 
             padding: 20px; 
             border-radius: 10px;
@@ -43,12 +43,43 @@
             text-align: left;
         }
         #weather-container { display: none; }
-        #alerts {
-            background-color: #3b0000;
-            border-left: 5px solid #e63946;
-            color: #ff6b6b;
-            font-size: 1.1em;
+
+        /* Alerts Banner */
+        #alerts-banner {
+            width: 100%;
+            background-color: #b71c1c;  /* Reddish background */
+            color: #fff;  /* White text for contrast */
+            font-size: 1.5em;  /* Larger text size */
+            padding: 15px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            overflow: hidden;
+            text-align: center;
+            display: none; /* Initially hidden */
         }
+        #alerts-list {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            white-space: nowrap;
+            display: inline-block;
+            animation: scroll-left 40s linear infinite;  /* Slower scroll */
+        }
+        #alerts-list li {
+            display: inline-block;
+            padding: 0 30px;
+        }
+        @keyframes scroll-left {
+            from {
+                transform: translateX(100%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
         #forecast-container {
             background-color: #1a237e;
             border-left: 5px solid #64b5f6;
@@ -85,10 +116,20 @@
 <body>
     <h1>McRae Weather Station Data</h1>
     <button onclick="fetchWeather()">Get Weather</button>
-    <div id="weather-container"></div>
-    <div id="alerts"></div>
-    <div id="forecast-container"></div>
+
+    <!-- Last Updated -->
     <p id="last-updated"></p>
+
+    <div id="weather-container"></div>
+    
+    <!-- Alerts Banner -->
+    <div id="alerts-banner">
+        <ul id="alerts-list">
+            <!-- Weather Alerts will be dynamically inserted here -->
+        </ul>
+    </div>
+
+    <div id="forecast-container"></div>
 
     <script>
         function fetchWeather() {
@@ -103,7 +144,7 @@
 
                         const iconCode = data.iconCode && data.iconCode[1] ? data.iconCode[1] : "default";
 
-                        container.innerHTML = `
+                        container.innerHTML = ` 
                             <img id="weather-icon" src="/static/icons/${iconCode}.png" alt="Weather Icon" style="width: 70px; height: 50px;">
                             <p><strong>Station ID:</strong> ${data.stationID}</p>
                             <p><strong>Temperature:</strong> ${data.temperature}°F</p>
@@ -135,20 +176,33 @@
             fetch('https://api.weather.gov/alerts/active?point=37.064,-94.501')
                 .then(response => response.json())
                 .then(data => {
-                    const alertContainer = document.getElementById('alerts');
+                    const alertContainer = document.getElementById('alerts-list');
+                    const alertBanner = document.getElementById('alerts-banner'); // Get the alert banner element
+                    alertContainer.innerHTML = ''; // Clear any previous alerts
+
                     if (data.features?.length > 0) {
-                        let alertHTML = '<h2>Active Weather Alerts</h2><ul>';
+                        // Show the alert banner if there are alerts
+                        alertBanner.style.display = 'block';
+
                         data.features.forEach(alert => {
-                            alertHTML += `<li><strong>${alert.properties.event}</strong>: ${alert.properties.headline}</li>`;
+                            const listItem = document.createElement("li");
+                            listItem.textContent = `${alert.properties.event}: ${alert.properties.headline}`;
+                            alertContainer.appendChild(listItem);
                         });
-                        alertHTML += '</ul>';
-                        alertContainer.innerHTML = alertHTML;
                     } else {
-                        alertContainer.innerHTML = '<p>No active weather alerts.</p>';
+                        // Hide the alert banner if there are no alerts
+                        alertBanner.style.display = 'none';
                     }
                 })
                 .catch(() => {
-                    document.getElementById('alerts').innerHTML = '<p class="error">Error fetching weather alerts.</p>';
+                    const alertContainer = document.getElementById('alerts-list');
+                    const alertBanner = document.getElementById('alerts-banner');
+                    const errorItem = document.createElement("li");
+                    errorItem.textContent = "Error fetching weather alerts.";
+                    alertContainer.appendChild(errorItem);
+
+                    // Show the banner even if there's an error fetching alerts
+                    alertBanner.style.display = 'block';
                 });
         }
 
@@ -161,8 +215,10 @@
                         forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
                     } else {
                         let forecastHTML = '<h2>Weather Forecast</h2><ul>';
+
                         data.forEach(day => {
                             const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
+
                             forecastHTML += `
                                 <li>
                                     <strong>${day.day}:</strong> ${day.narrative}<br>
@@ -171,6 +227,7 @@
                                 </li>
                             `;
                         });
+
                         forecastHTML += '</ul>';
                         forecastContainer.innerHTML = forecastHTML;
                     }
