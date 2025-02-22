@@ -225,39 +225,48 @@
             document.getElementById('last-updated').innerText = `Last Updated: ${now.toLocaleString()}`;
         }
 
-        function fetchWeatherAlerts() {
-            fetch('https://api.weather.gov/alerts/active?point=37.064,-94.501')
-                .then(response => response.json())
-                .then(data => {
-                    const alertContainer = document.getElementById('alerts-list');
-                    const alertBanner = document.getElementById('alerts-banner'); // Get the alert banner element
-                    alertContainer.innerHTML = ''; // Clear any previous alerts
+	function fetchWeatherForecast() {
+		fetch('/forecast')
+			.then(response => response.json())
+			.then(data => {
+				const forecastContainer = document.getElementById('forecast-container');
+				if (data.error) {
+					forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+				} else {
+					let forecastHTML = '<h2>Weather Forecast</h2><ul>';
+					let todayIcon = "default.png"; // Default icon
 
-                    if (data.features?.length > 0) {
-                        // Show the alert banner if there are alerts
-                        alertBanner.style.display = 'block';
+					const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-                        data.features.forEach(alert => {
-                            const listItem = document.createElement("li");
-                            listItem.textContent = `${alert.properties.event}: ${alert.properties.headline}`;
-                            alertContainer.appendChild(listItem);
-                        });
-                    } else {
-                        // Hide the alert banner if there are no alerts
-                        alertBanner.style.display = 'none';
-                    }
-                })
-                .catch(() => {
-                    const alertContainer = document.getElementById('alerts-list');
-                    const alertBanner = document.getElementById('alerts-banner');
-                    const errorItem = document.createElement("li");
-                    errorItem.textContent = "Error fetching weather alerts.";
-                    alertContainer.appendChild(errorItem);
+					// Display the main weather icon at the top (Today or Tonight)
+					document.getElementById('weather-icon').src = `/static/icons/${data.todayIcon}.png`;
 
-                    // Show the banner even if there's an error fetching alerts
-                    alertBanner.style.display = 'block';
-                });
-        }
+					// Loop through forecast data to display it
+					data.forecastData.forEach(day => {
+						const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
+
+						// If the day is "Today" but after 6 PM, display as "Tonight"
+						if (day.day === today && new Date().getHours() >= 18) {
+							day.day = "Tonight";
+						}
+
+						forecastHTML += `
+							<li>
+								<strong>${day.day}:</strong> ${day.narrative}<br>
+								<img src="${iconURL}" alt="Weather Icon" style="width: 50px; height: 50px;">
+								<br>High: ${day.tempMax ?? "N/A"}°F | Low: ${day.tempMin ?? "N/A"}°F
+							</li>
+						`;
+					});
+
+					forecastHTML += '</ul>';
+					forecastContainer.innerHTML = forecastHTML;
+				}
+			})
+			.catch(() => {
+				document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
+			});
+	}
 
     function fetchWeatherForecast() {
         fetch('/forecast')
