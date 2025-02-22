@@ -4,6 +4,7 @@ import json
 import requests
 import os
 import threading
+from datetime import datetime, timedata
 
 app = Flask(__name__, template_folder="templates")
 
@@ -108,13 +109,14 @@ def get_forecast():
 
     forecast_data = []
     days_of_week = data.get('dayOfWeek', [])
-    dayparts = data.get('daypart', {})
+    dayparts = data.get('daypart', [])
 
-    if not dayparts or 'daypartName' not in dayparts[0] or 'iconCode' not in dayparts[0]:
-        return jsonify({"error": "Missing daypart data"}), 400
+    # Get today's and tomorrow's day names dynamically
+    today = datetime.today().strftime('%A')  # Get the current day as a string (e.g., 'Monday')
+    tomorrow = (datetime.today() + timedelta(days=1)).strftime('%A')  # Get the next day (e.g., 'Tuesday')
 
-    daypart_names = dayparts[0].get('daypartName', [])
-    icon_codes = dayparts[0].get('iconCode', [])
+    # Default to "default" icon
+    today_icon = "default" 
 
     # Loop through the forecast days
     for i in range(len(days_of_week)):
@@ -127,8 +129,30 @@ def get_forecast():
         temp_max = temp_max_values[i] if i < len(temp_max_values) and temp_max_values[i] is not None else "N/A"
         temp_min = temp_min_values[i] if i < len(temp_min_values) and temp_min_values[i] is not None else "N/A"
 
-        # Get the corresponding icon for each day
-        icon_code = icon_codes[i] if i < len(icon_codes) else "default"
+        # Default to 'default' icon if no valid icon is found
+        icon_code = "default" 
+
+        # We expect dayparts to be a list of dictionaries with keys daypartName, dayOrNight, and iconCode
+        daypart_names = dayparts[0].get('daypartName', [])
+        day_or_night = dayparts[0].get('dayOrNight', [])
+        icon_codes = dayparts[0].get('iconCode', [])
+
+        if not daypart_names or not day_or_night or not icon_codes:
+            print(f"Missing data for day {day}. Skipping icon assignment.")
+        else:
+            # Determine if we should use "Today" or "Tonight" based on time of day
+            if day == today:
+                # If the data is already for tonight, label it as "Tonight"
+                day = "Tonight" if "night" in narrative.lower() else "Today"
+                today_icon = icon_codes[1] if "N" in day_or_night else icon_codes[0]  # Use night icon if after sunset
+            elif day == tomorrow:
+                day = "Tomorrow"
+
+            # Loop through each day's daypart names to find the corresponding daytime and nighttime icon code
+            for j in range(len(daypart_names)):
+                if daypart_names[j] and daypart_names[j].lower() == day.lower():
+                    icon_code = icon_codes[j]
+                    break  # Stop once the correct icon for the day is found
 
         print(f"Processed {day}: icon={icon_code}, tempMax={temp_max}, tempMin={temp_min}")  # Debug output
 
@@ -140,7 +164,12 @@ def get_forecast():
             "tempMin": temp_min
         })
 
-    return jsonify(forecast_data)
+    # Add today's icon to the response, so it can be displayed at the top
+    return jsonify({
+        "todayIcon": today_icon,
+        "forecastData": forecast_data
+    })
+
 
 
 # Function to run Flask on port 5000
