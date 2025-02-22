@@ -2,9 +2,10 @@ import math
 from flask import Flask, request, jsonify, render_template
 import json
 import requests
+from bs4 import BeautifulSoup
 import os
 import threading
-from datetime import datetime, timedata
+from datetime import datetime, timedelta
 
 app = Flask(__name__, template_folder="templates")
 
