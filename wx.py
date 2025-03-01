@@ -174,7 +174,7 @@ def get_forecast():
     })
     
     # Chat Routes
-    @app.route('/chat', methods=["GET", "POST"])
+    @app.route("/chat", methods=["GET", "POST"])
     def chat():
         if request.method == "POST":
             message = request.json.get("message")
@@ -185,18 +185,18 @@ def get_forecast():
                         messages = json.load(file)
                 else:
                     messages = []
-        
+    
                 # Add new message
                 new_message = {
                     "message": message,
                     "timestamp": datetime.now().isoformat()
                 }
                 messages.append(new_message)
-        
+    
                 # Save back to the file
                 with open(MESSAGES_FILE, "w") as file:
                     json.dump(messages, file)
-        
+    
                 return jsonify({"status": "success", "message": new_message}), 200
             return jsonify({"error": "Message is required"}), 400
         else:
@@ -206,9 +206,8 @@ def get_forecast():
                     messages = json.load(file)
             else:
                 messages = []
-        
-            return jsonify({"messages": messages})
     
+            return jsonify({"messages": messages})
 
     
 
