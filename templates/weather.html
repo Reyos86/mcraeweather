@@ -196,6 +196,13 @@
             } else {
                 container.style.display = 'block';
 
+                // Check if weather-icon exists
+                const weatherIcon = document.getElementById('weather-icon');
+                if (weatherIcon) {
+                    // Set the weather icon for the current weather
+                    weatherIcon.src = `/static/icons/${data.iconCode || 'default'}.png`;
+                }
+
                 container.innerHTML = ` 
                     <p><strong>Station ID:</strong> ${data.stationID}</p>
                     <p><strong>Temperature:</strong> ${data.temperature}°F</p>
@@ -217,7 +224,6 @@
             document.getElementById('weather-container').innerHTML = `<p class="error">Error fetching weather data: ${error.message}</p>`;
         });
 }
-
         function updateLastUpdatedTime() {
             const now = new Date();
             document.getElementById('last-updated').innerText = `Last Updated: ${now.toLocaleString()}`;
@@ -273,8 +279,11 @@ function fetchWeatherForecast() {
 
                 const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-                // Display the main weather icon at the top (Today or Tonight)
-                document.getElementById('weather-icon').src = `/static/icons/${data.todayIcon}.png`; // Use forecast's icon
+                // Ensure the weather icon is updated based on the forecast's data
+                const weatherIcon = document.getElementById('weather-icon');
+                if (weatherIcon) {
+                    weatherIcon.src = `/static/icons/${data.todayIcon}.png`;
+                }
 
                 // Loop through forecast data to display it
                 data.forecastData.forEach(day => {
