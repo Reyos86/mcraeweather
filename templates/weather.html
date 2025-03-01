@@ -186,52 +186,40 @@
     <div id="forecast-container"></div>
 
     <script>
-document.addEventListener("DOMContentLoaded", function() {
-    fetchWeather(); // Call the weather function after the DOM is fully loaded.
-});
+		function fetchWeather() {
+			fetch('/weather')
+				.then(response => response.json())
+				.then(data => {
+					const container = document.getElementById('weather-container');
+					if (data.error) {
+						container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+					} else {
+						container.style.display = 'block';
 
-function fetchWeather() {
-    fetch('/weather')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('weather-container');
-            const weatherIcon = document.getElementById('weather-icon'); // Ensure the weather icon exists
+						// Placeholder for icon update, will be replaced when forecast loads
+						container.innerHTML = ` 
+							<img id="weather-icon" src="/static/icons/default.png" alt="Weather Icon" style="width: 70px; height: 70px;">
+							<p><strong>Station ID:</strong> ${data.stationID}</p>
+							<p><strong>Temperature:</strong> ${data.temperature}°F</p>
+							<p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
+							<p><strong>Humidity:</strong> ${data.weather.humidity}%</p>
+							<p><strong>Wind Speed:</strong> ${data.weather.windSpeed} mph</p>
+							<p><strong>Wind Direction:</strong> ${data.windDir}</p>
+							<p><strong>Pressure:</strong> ${data.weather.pressure} inHg</p>
+							<p><strong>Precip Rate:</strong> ${data.rainForecast} inches</p>
+							<p><strong>Total Rain:</strong> ${data.totalRain} inches</p>
+						`;
 
-            if (!weatherIcon) {
-                console.error("Weather icon element not found.");
-                return; // Exit if the icon is not found
-            }
+						updateLastUpdatedTime();
+					}
+					fetchWeatherAlerts();
+					fetchWeatherForecast(); // Fetch forecast after weather
+				})
+				.catch(error => {
+					document.getElementById('weather-container').innerHTML = `<p class="error">Error fetching weather data: ${error.message}</p>`;
+				});
+		}
 
-            if (data.error) {
-                container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
-            } else {
-                container.style.display = 'block';
-
-                // Set the weather icon
-                weatherIcon.src = `/static/icons/${data.iconCode || 'default'}.png`;
-
-                container.innerHTML = ` 
-                    <p><strong>Station ID:</strong> ${data.stationID}</p>
-                    <p><strong>Temperature:</strong> ${data.temperature}°F</p>
-                    <p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
-                    <p><strong>Humidity:</strong> ${data.weather.humidity}%</p>
-                    <p><strong>Wind Speed:</strong> ${data.weather.windSpeed} mph</p>
-                    <p><strong>Wind Direction:</strong> ${data.windDir}</p>
-                    <p><strong>Pressure:</strong> ${data.weather.pressure} inHg</p>
-                    <p><strong>Precip Rate:</strong> ${data.rainForecast} inches</p>
-                    <p><strong>Total Rain:</strong> ${data.totalRain} inches</p>
-                `;
-
-                updateLastUpdatedTime();
-            }
-
-            fetchWeatherAlerts();
-            fetchWeatherForecast(); // Fetch forecast after weather
-        })
-        .catch(error => {
-            document.getElementById('weather-container').innerHTML = `<p class="error">Error fetching weather data: ${error.message}</p>`;
-        });
-}
         function updateLastUpdatedTime() {
             const now = new Date();
             document.getElementById('last-updated').innerText = `Last Updated: ${now.toLocaleString()}`;
@@ -269,54 +257,54 @@ function fetchWeather() {
                     // Show the banner even if there's an error fetching alerts
                     alertBanner.style.display = 'block';
                 });
-
-	console.log("Weather function setting icon to:", document.getElementById('weather-icon').src);
-
         }
 
-function fetchWeatherForecast() {
-    fetch('/forecast')
-        .then(response => response.json())
-        .then(data => {
-            const forecastContainer = document.getElementById('forecast-container');
-            if (data.error) {
-                forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
-            } else {
-                let forecastHTML = '<h2>Weather Forecast</h2><ul>';
-                const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+		function fetchWeatherForecast() {
+			fetch('/forecast')
+				.then(response => response.json())
+				.then(data => {
+					const forecastContainer = document.getElementById('forecast-container');
+					if (data.error) {
+						forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+					} else {
+						let forecastHTML = '<h2>Weather Forecast</h2><ul>';
+						let todayIcon = "default.png"; // Default icon
 
-                // Ensure the weather icon is updated based on the forecast's data
-                const weatherIcon = document.getElementById('weather-icon');
-                if (weatherIcon) {
-                    weatherIcon.src = `/static/icons/${data.todayIcon}.png`;
-                }
+						const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-                // Loop through forecast data to display it
-                data.forecastData.forEach(day => {
-                    const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
+						// Display the main weather icon at the top (Today or Tonight)
+						document.getElementById('weather-icon').src = `/static/icons/${data.todayIcon}.png`;
 
-                    // If the day is "Today" but after 6 PM, display as "Tonight"
-                    if (day.day === today && new Date().getHours() >= 18) {
-                        day.day = "Tonight";
-                    }
+						// Loop through forecast data to display it
+						data.forecastData.forEach(day => {
+							const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
 
-                    forecastHTML += `
-                        <li>
-                            <strong>${day.day}:</strong> ${day.narrative}<br>
-                            <img src="${iconURL}" alt="Weather Icon" style="width: 50px; height: 50px;">
-                            <br>High: ${day.tempMax ?? "N/A"}°F | Low: ${day.tempMin ?? "N/A"}°F
-                        </li>
-                    `;
-                });
+							// If the day is "Today" but after 6 PM, display as "Tonight"
+							if (day.day === today && new Date().getHours() >= 18) {
+								day.day = "Tonight";
+							}
 
-                forecastHTML += '</ul>';
-                forecastContainer.innerHTML = forecastHTML;
-            }
-        })
-        .catch(() => {
-            document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
-        });
-}
+							forecastHTML += `
+								<li>
+									<strong>${day.day}:</strong> ${day.narrative}<br>
+									<img src="${iconURL}" alt="Weather Icon" style="width: 50px; height: 50px;">
+									<br>High: ${day.tempMax ?? "N/A"}°F | Low: ${day.tempMin ?? "N/A"}°F
+								</li>
+							`;
+						});
+
+						forecastHTML += '</ul>';
+						forecastContainer.innerHTML = forecastHTML;
+					}
+				})
+				.catch(() => {
+					document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
+				});
+		}
+
+
+
+
 
 
     window.onload = fetchWeather;
