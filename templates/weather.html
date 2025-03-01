@@ -36,48 +36,6 @@
             background-color: #388e3c;
             transform: scale(1.05);
         }
-
-        /* Chat Styling */
-	#chat-container {
-	    position: fixed; /* Keeps chat separate from other elements */
-	    bottom: 20px; /* Places it at the bottom of the page */
-	    right: 20px; /* Positions it on the right */
-	    width: 300px; /* Sets a fixed width */
-	    background-color: #1e1e1e;
-	    border-radius: 10px;
-	    padding: 15px;
-	    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	    display: flex;
-	    flex-direction: column;
-	    z-index: 1000; /* Ensures it appears above other elements */
-	}
-	
-	#chat-messages {
-	    flex-grow: 1;
-	    overflow-y: auto;
-	    max-height: 250px;
-	    padding: 5px;
-	}
-	
-	#chat-input-container {
-	    display: flex;
-	}
-	
-	#chat-input {
-	    flex-grow: 1;
-	    padding: 8px;
-	    border-radius: 5px;
-	    background-color: #333;
-	    color: white;
-	}
-	
-	#chat-send {
-	    margin-left: 5px;
-	    background-color: #1db954;
-	    border-radius: 5px;
-	    cursor: pointer;
-	}
-	    
         #weather-container, #forecast-container { 
             margin-top: 20px; 
             padding: 20px; 
@@ -540,65 +498,7 @@
     }
 
     updateCarousel();
-</scipt>
-</body>
-	
-    <!-- Chat Container -->
-    <div id="chat-container">
-        <div id="chat-messages"></div>
-        <div id="chat-input-container">
-            <input type="text" id="chat-input" placeholder="Type a message...">
-            <button id="chat-send" onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-
-    <script>
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const messageText = input.value.trim();
-            if (messageText === "") return;
-
-            addMessage(messageText, 'user');
-
-            let response = await fetch("/send_message", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: messageText })
-            });
-
-            if (response.ok) {
-                input.value = "";
-                loadMessages();
-            }
-        }
-
-        async function loadMessages() {
-            let response = await fetch("/get_messages");
-            let data = await response.json();
-            let chatMessages = document.getElementById('chat-messages');
-            chatMessages.innerHTML = "";
-
-            data.messages.forEach(msg => {
-                let sender = msg.startsWith("User:") ? "user" : "bot";
-                addMessage(msg.replace("User: ", "").replace("Bot: ", ""), sender);
-            });
-
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function addMessage(messageText, sender) {
-            const chatMessages = document.getElementById('chat-messages');
-            const message = document.createElement('div');
-            message.classList.add('chat-message', sender);
-            message.innerText = messageText;
-            chatMessages.appendChild(message);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        setInterval(loadMessages, 3000);
-        loadMessages();
 </script>
-
 	
 </body>
 </html>
