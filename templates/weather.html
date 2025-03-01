@@ -497,68 +497,62 @@
 </head>
 <body>
 
-<!-- Chat Container -->
-<div id="chat-container">
-    <div id="chat-messages"></div>
-    <div id="chat-input-container">
-        <input type="text" id="chat-input" placeholder="Type a message...">
-        <button id="chat-send" onclick="sendMessage()">Send</button>
-    </div>
+<!-- HTML Chat Container -->
+<div id="chatContainer" style="position: fixed; bottom: 0; right: 0; width: 300px; height: 400px; background-color: #fff; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+    <div id="messagesContainer" style="overflow-y: auto; height: 350px; padding: 10px;"></div>
+    <input id="messageInput" type="text" placeholder="Type a message..." style="width: 100%; padding: 10px; border: none; box-sizing: border-box;">
+    <button id="sendMessageBtn" style="width: 100%; padding: 10px;">Send</button>
 </div>
 
-
 <script>
-    async function sendMessage() {
-        const input = document.getElementById('chat-input');
-        const messageText = input.value.trim();
-        if (messageText === "") return;
+    // Function to fetch messages from the server
+    async function fetchMessages() {
+        const response = await fetch('/chat');
+        const data = await response.json();
+        return data.messages || [];
+    }
 
-        // Add user message
-        addMessage(messageText, 'user');
-
-        // Clear input field
-        input.value = "";
-
-        // Send message to the server and fetch the response
-        let response = await fetch("/send_message", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: messageText })
+    // Function to send a message to the server
+    async function sendMessage(message) {
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message })
         });
 
-        if (response.ok) {
-            loadMessages();
+        const data = await response.json();
+        return data.status === 'success';
+    }
+
+    // Event listener to handle new messages
+    document.getElementById('sendMessageBtn').addEventListener('click', async () => {
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value;
+        if (message) {
+            const success = await sendMessage(message);
+            if (success) {
+                messageInput.value = ''; // Clear the input after sending
+                loadMessages(); // Reload messages after sending
+            }
         }
-    }
+    });
 
+    // Function to load messages and display them
     async function loadMessages() {
-        let response = await fetch("/get_messages");
-        let data = await response.json();
-        let chatMessages = document.getElementById('chat-messages');
-        chatMessages.innerHTML = "";
-
-        data.messages.forEach(msg => {
-            let sender = msg.startsWith("User:") ? "user" : "bot";
-            addMessage(msg.replace("User: ", "").replace("Bot: ", ""), sender);
+        const messages = await fetchMessages();
+        const messagesContainer = document.getElementById('messagesContainer');
+        messagesContainer.innerHTML = ''; // Clear existing messages
+        messages.forEach(msg => {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = `${msg.timestamp}: ${msg.message}`;
+            messagesContainer.appendChild(messageElement);
         });
-
-        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function addMessage(messageText, sender) {
-        const chatMessages = document.getElementById('chat-messages');
-        const message = document.createElement('div');
-        message.classList.add('chat-message', sender);
-        message.innerText = messageText;
-        chatMessages.appendChild(message);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    setInterval(loadMessages, 3000);
-    loadMessages();
+    // Load messages when the page loads
+    window.onload = loadMessages;
 </script>
 
-	
 <h2>Paint Scheme Preview: 2025 Circuit of the Americas!</h2>
 
 <div class="carousel-container">
