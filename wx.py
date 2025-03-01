@@ -179,14 +179,14 @@ def get_forecast():
         if request.method == "POST":
             message = request.json.get("message")
             if message:
-                # Load messages from the file
+                # Load messages from the file, ensure the file exists
                 if os.path.exists(MESSAGES_FILE):
                     with open(MESSAGES_FILE, "r") as file:
                         messages = json.load(file)
                 else:
                     messages = []
     
-                # Add new message
+                # Add the new message with timestamp
                 new_message = {
                     "message": message,
                     "timestamp": datetime.now().isoformat()
@@ -200,7 +200,7 @@ def get_forecast():
                 return jsonify({"status": "success", "message": new_message}), 200
             return jsonify({"error": "Message is required"}), 400
         else:
-            # Load all messages
+            # GET: Load all messages
             if os.path.exists(MESSAGES_FILE):
                 with open(MESSAGES_FILE, "r") as file:
                     messages = json.load(file)
@@ -208,6 +208,7 @@ def get_forecast():
                 messages = []
     
             return jsonify({"messages": messages})
+
     
 
 
