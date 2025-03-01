@@ -186,22 +186,29 @@
     <div id="forecast-container"></div>
 
     <script>
-		function fetchWeather() {
+document.addEventListener("DOMContentLoaded", function() {
+    fetchWeather(); // Call the weather function after the DOM is fully loaded.
+});
+
+function fetchWeather() {
     fetch('/weather')
         .then(response => response.json())
         .then(data => {
             const container = document.getElementById('weather-container');
+            const weatherIcon = document.getElementById('weather-icon'); // Ensure the weather icon exists
+
+            if (!weatherIcon) {
+                console.error("Weather icon element not found.");
+                return; // Exit if the icon is not found
+            }
+
             if (data.error) {
                 container.innerHTML = `<p class="error">Error: ${data.error}</p>`;
             } else {
                 container.style.display = 'block';
 
-                // Check if weather-icon exists
-                const weatherIcon = document.getElementById('weather-icon');
-                if (weatherIcon) {
-                    // Set the weather icon for the current weather
-                    weatherIcon.src = `/static/icons/${data.iconCode || 'default'}.png`;
-                }
+                // Set the weather icon
+                weatherIcon.src = `/static/icons/${data.iconCode || 'default'}.png`;
 
                 container.innerHTML = ` 
                     <p><strong>Station ID:</strong> ${data.stationID}</p>
@@ -217,6 +224,7 @@
 
                 updateLastUpdatedTime();
             }
+
             fetchWeatherAlerts();
             fetchWeatherForecast(); // Fetch forecast after weather
         })
@@ -275,8 +283,6 @@ function fetchWeatherForecast() {
                 forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
             } else {
                 let forecastHTML = '<h2>Weather Forecast</h2><ul>';
-                let todayIcon = "default.png"; // Default icon
-
                 const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
                 // Ensure the weather icon is updated based on the forecast's data
@@ -311,8 +317,6 @@ function fetchWeatherForecast() {
             document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
         });
 }
-
-
 
 
     window.onload = fetchWeather;
