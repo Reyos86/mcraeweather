@@ -8,6 +8,9 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__, template_folder="templates")
 
+# File to store the messages (you can use a database instead for production)
+MESSAGES_FILE = 'messages.json'
+
 # Load API keys from environment variables
 WUNDER_API_KEY = os.getenv("WUNDERGROUND_API_KEY", "497e85fd58f14e39be85fd58f1ee3956")  # Your Wunderground API key
 OWM_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY", "35b5f6e19f2be4347afe5d6076b4d008")  # Your OpenWeatherMap API key
@@ -169,7 +172,43 @@ def get_forecast():
         "todayIcon": today_icon,
         "forecastData": forecast_data
     })
-
+    
+    # Chat Routes
+    @app.route("/chat", methods=["GET", "POST"])
+    def chat():
+        if request.method == "POST":
+            message = request.json.get("message")
+            if message:
+                # Load messages from the file
+                if os.path.exists(MESSAGES_FILE):
+                    with open(MESSAGES_FILE, "r") as file:
+                        messages = json.load(file)
+                else:
+                    messages = []
+    
+                # Add new message
+                new_message = {
+                    "message": message,
+                    "timestamp": datetime.now().isoformat()
+                }
+                messages.append(new_message)
+    
+                # Save back to the file
+                with open(MESSAGES_FILE, "w") as file:
+                    json.dump(messages, file)
+    
+                return jsonify({"status": "success", "message": new_message}), 200
+            return jsonify({"error": "Message is required"}), 400
+        else:
+            # Load all messages
+            if os.path.exists(MESSAGES_FILE):
+                with open(MESSAGES_FILE, "r") as file:
+                    messages = json.load(file)
+            else:
+                messages = []
+    
+            return jsonify({"messages": messages})
+    
 
 
 # Function to run Flask on port 5000
