@@ -497,61 +497,83 @@
 </head>
 <body>
 
-<!-- HTML Chat Container -->
-<div id="chatContainer" style="position: fixed; bottom: 0; right: 0; width: 300px; height: 400px; background-color: #fff; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
-    <div id="messagesContainer" style="overflow-y: auto; height: 350px; padding: 10px;"></div>
-    <input id="messageInput" type="text" placeholder="Type a message..." style="width: 100%; padding: 10px; border: none; box-sizing: border-box;">
-    <button id="sendMessageBtn" style="width: 100%; padding: 10px;">Send</button>
-</div>
+	<!-- HTML Chat Container -->
+	<div id="chatContainer" style="position: fixed; bottom: 20px; right: 20px; width: 300px; height: 400px; background-color: #fff; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 10px; display: flex; flex-direction: column; justify-content: flex-end;">
+	    <!-- Container for the messages -->
+	    <div id="messagesContainer" style="overflow-y: auto; flex-grow: 1; padding-bottom: 10px;"></div>
+	    <!-- Message input and send button -->
+	    <div style="display: flex; flex-direction: column;">
+	        <input id="messageInput" type="text" placeholder="Type a message..." style="padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px;">
+	        <button id="sendMessageBtn" style="padding: 10px; border: 1px solid #ccc; border-radius: 5px; background-color: #4CAF50; color: white; cursor: pointer;">Send</button>
+	    </div>
+	</div>
+	
+	<script>
+	    // Function to fetch messages from the server
+	    async function fetchMessages() {
+	        const response = await fetch('/chat');
+	        const data = await response.json();
+	        return data.messages || [];
+	    }
+	
+	    // Function to send a message to the server
+	    async function sendMessage(message) {
+	        const response = await fetch('/chat', {
+	            method: 'POST',
+	            headers: { 'Content-Type': 'application/json' },
+	            body: JSON.stringify({ message: message })
+	        });
+	
+	        const data = await response.json();
+	        return data.status === 'success';
+	    }
+	
+	    // Event listener to handle new messages (via button)
+	    document.getElementById('sendMessageBtn').addEventListener('click', async () => {
+	        const messageInput = document.getElementById('messageInput');
+	        const message = messageInput.value;
+	        if (message) {
+	            const success = await sendMessage(message);
+	            if (success) {
+	                messageInput.value = ''; // Clear the input after sending
+	                loadMessages(); // Reload messages after sending
+	            }
+	        }
+	    });
+	
+	    // Event listener to send the message on 'Enter' key press
+	    document.getElementById('messageInput').addEventListener('keydown', async (e) => {
+	        if (e.key === 'Enter') {
+	            const message = e.target.value;
+	            if (message) {
+	                const success = await sendMessage(message);
+	                if (success) {
+	                    e.target.value = ''; // Clear the input after sending
+	                    loadMessages(); // Reload messages after sending
+	                }
+	            }
+	        }
+	    });
+	
+	    // Function to load messages and display them
+	    async function loadMessages() {
+	        const messages = await fetchMessages();
+	        const messagesContainer = document.getElementById('messagesContainer');
+	        messagesContainer.innerHTML = ''; // Clear existing messages
+	        messages.forEach(msg => {
+	            const messageElement = document.createElement('div');
+	            messageElement.textContent = `${msg.timestamp}: ${msg.message}`;
+	            messagesContainer.appendChild(messageElement);
+	        });
+	
+	        // Scroll to the bottom of the messages container
+	        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+	    }
+	
+	    // Load messages when the page loads
+	    window.onload = loadMessages;
+	</script>
 
-<script>
-    // Function to fetch messages from the server
-    async function fetchMessages() {
-        const response = await fetch('/chat');
-        const data = await response.json();
-        return data.messages || [];
-    }
-
-    // Function to send a message to the server
-    async function sendMessage(message) {
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message })
-        });
-
-        const data = await response.json();
-        return data.status === 'success';
-    }
-
-    // Event listener to handle new messages
-    document.getElementById('sendMessageBtn').addEventListener('click', async () => {
-        const messageInput = document.getElementById('messageInput');
-        const message = messageInput.value;
-        if (message) {
-            const success = await sendMessage(message);
-            if (success) {
-                messageInput.value = ''; // Clear the input after sending
-                loadMessages(); // Reload messages after sending
-            }
-        }
-    });
-
-    // Function to load messages and display them
-    async function loadMessages() {
-        const messages = await fetchMessages();
-        const messagesContainer = document.getElementById('messagesContainer');
-        messagesContainer.innerHTML = ''; // Clear existing messages
-        messages.forEach(msg => {
-            const messageElement = document.createElement('div');
-            messageElement.textContent = `${msg.timestamp}: ${msg.message}`;
-            messagesContainer.appendChild(messageElement);
-        });
-    }
-
-    // Load messages when the page loads
-    window.onload = loadMessages;
-</script>
 
 <h2>Paint Scheme Preview: 2025 Circuit of the Americas!</h2>
 
