@@ -508,15 +508,8 @@
 	    </div>
 	</div>
 	
-	<script>
-	    // Function to fetch messages from the server
-	    async function fetchMessages() {
-	        const response = await fetch('/chat');
-	        const data = await response.json();
-	        return data.messages || [];
-	    }
-	
-	    // Function to send a message to the server
+<script>
+    // Function to send a message to the server
 	    async function sendMessage(message) {
 	        const response = await fetch('/chat', {
 	            method: 'POST',
@@ -528,34 +521,7 @@
 	        return data.status === 'success';
 	    }
 	
-	    // Event listener to handle new messages (via button)
-	    document.getElementById('sendMessageBtn').addEventListener('click', async () => {
-	        const messageInput = document.getElementById('messageInput');
-	        const message = messageInput.value;
-	        if (message) {
-	            const success = await sendMessage(message);
-	            if (success) {
-	                messageInput.value = ''; // Clear the input after sending
-	                loadMessages(); // Reload messages after sending
-	            }
-	        }
-	    });
-	
-	    // Event listener to send the message on 'Enter' key press
-	    document.getElementById('messageInput').addEventListener('keydown', async (e) => {
-	        if (e.key === 'Enter') {
-	            const message = e.target.value;
-	            if (message) {
-	                const success = await sendMessage(message);
-	                if (success) {
-	                    e.target.value = ''; // Clear the input after sending
-	                    loadMessages(); // Reload messages after sending
-	                }
-	            }
-	        }
-	    });
-	
-	    // Function to load messages and display them
+	    // Function to load and display messages from the server
 	    async function loadMessages() {
 	        const messages = await fetchMessages();
 	        const messagesContainer = document.getElementById('messagesContainer');
@@ -570,8 +536,43 @@
 	        messagesContainer.scrollTop = messagesContainer.scrollHeight;
 	    }
 	
-	    // Load messages when the page loads
-	    window.onload = loadMessages;
+	    // Fetch messages from the server
+	    async function fetchMessages() {
+	        const response = await fetch('/chat');
+	        const data = await response.json();
+	        return data.messages;
+	    }
+	
+	    // Send message when the user clicks the Send button
+	    document.getElementById('sendButton').addEventListener('click', async () => {
+	        const messageInput = document.getElementById('messageInput');
+	        const message = messageInput.value.trim();
+	        if (message) {
+	            const success = await sendMessage(message);
+	            if (success) {
+	                loadMessages();
+	                messageInput.value = ''; // Clear the input field after sending
+	            }
+	        }
+	    });
+	
+	    // Send message when the user presses Enter
+	    document.getElementById('messageInput').addEventListener('keypress', async (e) => {
+	        if (e.key === 'Enter') {
+	            const messageInput = document.getElementById('messageInput');
+	            const message = messageInput.value.trim();
+	            if (message) {
+	                const success = await sendMessage(message);
+	                if (success) {
+	                    loadMessages();
+	                    messageInput.value = ''; // Clear the input field after sending
+	                }
+	            }
+	        }
+	    });
+	
+	    // Load messages when the page is loaded
+	    window.addEventListener('load', loadMessages);
 	</script>
 
 
