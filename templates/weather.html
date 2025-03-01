@@ -259,7 +259,7 @@
                 });
         }
 
-		function fetchWeatherForecast() {
+function fetchWeatherForecast() {
     fetch('/forecast')
         .then(response => response.json())
         .then(data => {
@@ -268,18 +268,19 @@
                 forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
             } else {
                 let forecastHTML = '<h2>Weather Forecast</h2><ul>';
-
                 const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-                // Update the main weather icon at the top based on today's forecast
+                // 🚀 Ensure the correct weather icon updates from the forecast!
                 let weatherIcon = document.getElementById('weather-icon');
                 if (data.todayIcon) {
+                    console.log("Updating weather icon to:", `/static/icons/${data.todayIcon}.png`); // Debugging
                     weatherIcon.src = `/static/icons/${data.todayIcon}.png`;
                 } else {
-                    weatherIcon.src = "/static/icons/default.png"; // Fallback if no icon provided
+                    console.log("Using default weather icon");
+                    weatherIcon.src = "/static/icons/default.png"; // Fallback
                 }
 
-                // Loop through forecast data and display it
+                // Loop through forecast data
                 data.forecastData.forEach(day => {
                     const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
 
@@ -301,13 +302,11 @@
                 forecastContainer.innerHTML = forecastHTML;
             }
         })
-        .catch(() => {
+        .catch(error => {
+            console.error("Error fetching forecast:", error);
             document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
         });
 }
-
-
-
 
 
 
