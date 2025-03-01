@@ -36,6 +36,80 @@
             background-color: #388e3c;
             transform: scale(1.05);
         }
+
+        /* Chat Styling */
+        #chat-container {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            margin: 30px auto;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            max-height: 300px;
+        }
+
+        .chat-message {
+            background-color: #333;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .chat-message.user {
+            background-color: #1db954;
+            color: white;
+            text-align: right;
+        }
+
+        .chat-message.bot {
+            background-color: #444;
+            color: white;
+            text-align: left;
+        }
+
+        #chat-input-container {
+            display: flex;
+            align-items: center;
+        }
+
+        #chat-input {
+            width: 80%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            background-color: #333;
+            color: white;
+        }
+
+        #chat-input:focus {
+            outline: none;
+            border: 2px solid #1db954;
+        }
+
+        #chat-send {
+            background-color: #1db954;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #chat-send:hover {
+            background-color: #388e3c;
+        }
+	    
         #weather-container, #forecast-container { 
             margin-top: 20px; 
             padding: 20px; 
@@ -498,6 +572,44 @@
     }
 
     updateCarousel();
+
+    <!-- Chat Container -->
+    <div id="chat-container">
+        <div id="chat-messages">
+            <!-- Messages will be dynamically added here -->
+        </div>
+        <div id="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Type a message...">
+            <button id="chat-send" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const messageText = input.value.trim();
+            if (messageText) {
+                // Add user message
+                addMessage(messageText, 'user');
+                input.value = '';
+
+                // Simulate bot response
+                setTimeout(() => {
+                    const botResponse = "Bot response to: " + messageText;
+                    addMessage(botResponse, 'bot');
+                }, 1000);
+            }
+        }
+
+        function addMessage(messageText, sender) {
+            const chatMessages = document.getElementById('chat-messages');
+            const message = document.createElement('div');
+            message.classList.add('chat-message', sender);
+            message.innerText = messageText;
+            chatMessages.appendChild(message);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+        }
+	
 </script>
 	
 </body>
