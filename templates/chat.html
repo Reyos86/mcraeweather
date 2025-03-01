@@ -1,0 +1,35 @@
+function sendMessage() {
+    const message = document.getElementById("messageInput").value;
+
+    fetch('/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: message })
+    }).then(response => response.json())
+      .then(data => {
+          console.log('Message Sent:', data);
+      }).catch(error => {
+          console.error('Error:', error);
+      });
+}
+
+function loadMessages() {
+    fetch('/chat')
+        .then(response => response.json())
+        .then(data => {
+            const messages = data.messages;
+            const messagesContainer = document.getElementById("messagesContainer");
+            messagesContainer.innerHTML = "";  // Clear existing messages
+
+            messages.forEach(msg => {
+                const messageDiv = document.createElement("div");
+                messageDiv.textContent = `${msg.timestamp}: ${msg.message}`;
+                messagesContainer.appendChild(messageDiv);
+            });
+        })
+        .catch(error => console.error('Error loading messages:', error));
+}
+
+loadMessages();
