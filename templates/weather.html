@@ -421,6 +421,69 @@
 </head>
 <body>
 
+<!-- Chat Container -->
+<div id="chat-container">
+    <div id="chat-messages">
+        <!-- Messages will be dynamically added here -->
+    </div>
+    <div id="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Type a message...">
+        <button id="chat-send" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const messageText = input.value.trim();
+        if (messageText === "") return;
+
+        // Add user message
+        addMessage(messageText, 'user');
+
+        // Clear input field
+        input.value = "";
+
+        // Send message to the server and fetch the response
+        let response = await fetch("/send_message", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: messageText })
+        });
+
+        if (response.ok) {
+            loadMessages();
+        }
+    }
+
+    async function loadMessages() {
+        let response = await fetch("/get_messages");
+        let data = await response.json();
+        let chatMessages = document.getElementById('chat-messages');
+        chatMessages.innerHTML = "";
+
+        data.messages.forEach(msg => {
+            let sender = msg.startsWith("User:") ? "user" : "bot";
+            addMessage(msg.replace("User: ", "").replace("Bot: ", ""), sender);
+        });
+
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addMessage(messageText, sender) {
+        const chatMessages = document.getElementById('chat-messages');
+        const message = document.createElement('div');
+        message.classList.add('chat-message', sender);
+        message.innerText = messageText;
+        chatMessages.appendChild(message);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    setInterval(loadMessages, 3000);
+    loadMessages();
+</script>
+
+	
 <h2>Paint Scheme Preview: 2025 Circuit of the Americas!</h2>
 
 <div class="carousel-container">
