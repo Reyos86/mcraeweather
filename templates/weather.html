@@ -260,47 +260,51 @@
         }
 
 		function fetchWeatherForecast() {
-			fetch('/forecast')
-				.then(response => response.json())
-				.then(data => {
-					const forecastContainer = document.getElementById('forecast-container');
-					if (data.error) {
-						forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
-					} else {
-						let forecastHTML = '<h2>Weather Forecast</h2><ul>';
-						let todayIcon = "default.png"; // Default icon
+    fetch('/forecast')
+        .then(response => response.json())
+        .then(data => {
+            const forecastContainer = document.getElementById('forecast-container');
+            if (data.error) {
+                forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+            } else {
+                let forecastHTML = '<h2>Weather Forecast</h2><ul>';
 
-						const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+                const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-						// Display the main weather icon at the top (Today or Tonight)
-						document.getElementById('weather-icon').src = `/static/icons/${data.todayIcon}.png`;
+                // Update the main weather icon at the top based on today's forecast
+                let weatherIcon = document.getElementById('weather-icon');
+                if (data.todayIcon) {
+                    weatherIcon.src = `/static/icons/${data.todayIcon}.png`;
+                } else {
+                    weatherIcon.src = "/static/icons/default.png"; // Fallback if no icon provided
+                }
 
-						// Loop through forecast data to display it
-						data.forecastData.forEach(day => {
-							const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
+                // Loop through forecast data and display it
+                data.forecastData.forEach(day => {
+                    const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
 
-							// If the day is "Today" but after 6 PM, display as "Tonight"
-							if (day.day === today && new Date().getHours() >= 18) {
-								day.day = "Tonight";
-							}
+                    // If today and after 6 PM, rename "Today" to "Tonight"
+                    if (day.day === today && new Date().getHours() >= 18) {
+                        day.day = "Tonight";
+                    }
 
-							forecastHTML += `
-								<li>
-									<strong>${day.day}:</strong> ${day.narrative}<br>
-									<img src="${iconURL}" alt="Weather Icon" style="width: 50px; height: 50px;">
-									<br>High: ${day.tempMax ?? "N/A"}°F | Low: ${day.tempMin ?? "N/A"}°F
-								</li>
-							`;
-						});
+                    forecastHTML += `
+                        <li>
+                            <strong>${day.day}:</strong> ${day.narrative}<br>
+                            <img src="${iconURL}" alt="Weather Icon" style="width: 50px; height: 50px;">
+                            <br>High: ${day.tempMax ?? "N/A"}°F | Low: ${day.tempMin ?? "N/A"}°F
+                        </li>
+                    `;
+                });
 
-						forecastHTML += '</ul>';
-						forecastContainer.innerHTML = forecastHTML;
-					}
-				})
-				.catch(() => {
-					document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
-				});
-		}
+                forecastHTML += '</ul>';
+                forecastContainer.innerHTML = forecastHTML;
+            }
+        })
+        .catch(() => {
+            document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
+        });
+}
 
 
 
