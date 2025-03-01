@@ -196,9 +196,7 @@
             } else {
                 container.style.display = 'block';
 
-                // Placeholder for icon update, will be replaced when forecast loads
                 container.innerHTML = ` 
-                    <img id="weather-icon" src="/static/icons/default.png" alt="Weather Icon" style="width: 70px; height: 70px;">
                     <p><strong>Station ID:</strong> ${data.stationID}</p>
                     <p><strong>Temperature:</strong> ${data.temperature}°F</p>
                     <p><strong>Wind Chill:</strong> ${data.windChill}°F</p>
@@ -271,23 +269,18 @@ function fetchWeatherForecast() {
                 forecastContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
             } else {
                 let forecastHTML = '<h2>Weather Forecast</h2><ul>';
+                let todayIcon = "default.png"; // Default icon
+
                 const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
-                // 🚀 Ensure the correct weather icon updates from the forecast!
-                let weatherIcon = document.getElementById('weather-icon');
-                if (data.todayIcon) {
-                    console.log("Updating weather icon to:", `/static/icons/${data.todayIcon}.png`); // Debugging
-                    weatherIcon.src = `/static/icons/${data.todayIcon}.png`;
-                } else {
-                    console.log("Using default weather icon");
-                    weatherIcon.src = "/static/icons/default.png"; // Fallback
-                }
+                // Display the main weather icon at the top (Today or Tonight)
+                document.getElementById('weather-icon').src = `/static/icons/${data.todayIcon}.png`; // Use forecast's icon
 
-                // Loop through forecast data
+                // Loop through forecast data to display it
                 data.forecastData.forEach(day => {
                     const iconURL = `/static/icons/${day.iconCode || "default"}.png`;
 
-                    // If today and after 6 PM, rename "Today" to "Tonight"
+                    // If the day is "Today" but after 6 PM, display as "Tonight"
                     if (day.day === today && new Date().getHours() >= 18) {
                         day.day = "Tonight";
                     }
@@ -305,11 +298,11 @@ function fetchWeatherForecast() {
                 forecastContainer.innerHTML = forecastHTML;
             }
         })
-        .catch(error => {
-            console.error("Error fetching forecast:", error);
+        .catch(() => {
             document.getElementById('forecast-container').innerHTML = '<p class="error">Error fetching weather forecast.</p>';
         });
 }
+
 
 
 
