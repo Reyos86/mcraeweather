@@ -174,40 +174,41 @@ def get_forecast():
     })
     
     # Chat Routes
-    @app.route("/chat", methods=["GET", "POST"])
+    @app.route('/chat', methods=["GET", "POST"])
     def chat():
         if request.method == "POST":
             message = request.json.get("message")
             if message:
-                # Load messages from the file, ensure the file exists
+                # Load messages from the file
                 if os.path.exists(MESSAGES_FILE):
                     with open(MESSAGES_FILE, "r") as file:
                         messages = json.load(file)
                 else:
                     messages = []
-    
-                # Add the new message with timestamp
+        
+                # Add new message
                 new_message = {
                     "message": message,
                     "timestamp": datetime.now().isoformat()
                 }
                 messages.append(new_message)
-    
+        
                 # Save back to the file
                 with open(MESSAGES_FILE, "w") as file:
                     json.dump(messages, file)
-    
+        
                 return jsonify({"status": "success", "message": new_message}), 200
             return jsonify({"error": "Message is required"}), 400
         else:
-            # GET: Load all messages
+            # Load all messages
             if os.path.exists(MESSAGES_FILE):
                 with open(MESSAGES_FILE, "r") as file:
                     messages = json.load(file)
             else:
                 messages = []
-    
+        
             return jsonify({"messages": messages})
+    
 
     
 
