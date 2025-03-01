@@ -175,7 +175,7 @@ def get_forecast():
     
     # Chat Routes
     @app.route("/chat", methods=["GET", "POST"])
-def chat():
+    def chat():
     if request.method == "POST":
         print("POST request received")
         message = request.json.get("message")
