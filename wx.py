@@ -54,6 +54,7 @@ def lat_lon_to_tile(lat, lon, zoom):
 @app.route("/")
 def home():
     return render_template("weather.html")  # This serves the HTML page
+    return render_template("chat.html') #Chat HTML?
 
 @app.route("/weather", methods=["GET"])
 def get_weather():
