@@ -71,6 +71,13 @@
         function sendMessage() {
             const message = document.getElementById("messageInput").value;
 
+            // Check if message is empty
+            if (message.trim() === "") {
+                console.log("Message is empty. Not sending.");
+                return;
+            }
+
+            // Send the message to the Flask server
             fetch('/chat', {
                 method: 'POST',
                 headers: {
@@ -119,3 +126,4 @@
 
 </body>
 </html>
+
