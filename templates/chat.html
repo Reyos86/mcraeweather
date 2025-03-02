@@ -68,25 +68,6 @@
 
     <!-- JavaScript -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("DOM fully loaded");
-            
-            // Ensure the messageInput exists before adding an event listener
-            const messageInput = document.getElementById("messageInput");
-            
-            if (messageInput) {
-                console.log("Found messageInput element");
-                messageInput.addEventListener("keydown", function(event) {
-                    if (event.key === "Enter") {
-                        event.preventDefault(); // Prevent the default action (e.g., form submission)
-                        sendMessage(); // Call sendMessage function
-                    }
-                });
-            } else {
-                console.error("Message input field not found");
-            }
-        });
-
         // Function to send the message to the Flask server
         function sendMessage() {
             const message = document.getElementById("messageInput").value;
@@ -134,10 +115,22 @@
 
         // Load messages when the page is first loaded
         loadMessages();
+
+        // Attach event listener for "Enter" key press on message input field
+        const messageInput = document.getElementById("messageInput");
+        if (messageInput) {
+            messageInput.addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault(); // Prevent the default action (e.g., form submission)
+                    sendMessage(); // Call sendMessage function
+                }
+            });
+        }
     </script>
 
 </body>
 </html>
+
 
 
 
