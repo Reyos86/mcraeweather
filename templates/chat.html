@@ -66,7 +66,21 @@
         <div id="messagesContainer"></div>
     </div>
 
+            <!-- JavaScript -->
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Now you can safely add the event listener
+            const messageInput = document.getElementById("messageInput");
+            
+            if (messageInput) {
+                messageInput.addEventListener("keydown", function(event) {
+                    if (event.key === "Enter") {
+                        event.preventDefault(); // Prevent the default action (e.g., form submission)
+                        sendMessage(); // Call sendMessage function
+                    }
+                });
+            }
+        });
         // Function to send the message to the Flask server
         function sendMessage() {
             const message = document.getElementById("messageInput").value;
