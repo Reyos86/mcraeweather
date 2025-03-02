@@ -68,10 +68,11 @@
 
     <!-- JavaScript -->
     <script>
+        // Ensure the DOM is fully loaded before running any JavaScript
         document.addEventListener("DOMContentLoaded", function() {
+            // Ensure the messageInput exists before adding an event listener
             const messageInput = document.getElementById("messageInput");
-
-            // Check if messageInput exists before adding event listener
+            
             if (messageInput) {
                 messageInput.addEventListener("keydown", function(event) {
                     if (event.key === "Enter") {
@@ -133,6 +134,7 @@
 
 </body>
 </html>
+
 
 
 
