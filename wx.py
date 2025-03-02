@@ -18,6 +18,24 @@ OWM_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY", "35b5f6e19f2be4347afe5d6076b4d
 BASE_URL = "https://api.weather.com/v2/pws/observations/current"
 FORECAST_URL = "https://api.weather.com/v3/wx/forecast/daily/5day"
 
+# Load messages from the messages.json file
+def load_messages():
+    try:
+        with open(messages_file, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+# Save messages to the messages.json file
+def save_message(message):
+    messages = load_messages()
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    messages.append({'message': message, 'timestamp': timestamp})
+    with open(messages_file, 'w') as f:
+        json.dump(messages, f)
+
+
+
 # Function to convert wind direction (0-360) to cardinal direction
 def wind_direction_to_cardinal(degrees):
     directions = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West']
