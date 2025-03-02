@@ -68,12 +68,16 @@
 
     <!-- JavaScript -->
     <script>
-        // Ensure that the script runs after the DOM is fully loaded
-        window.onload = function() {
-            const messageInput = document.getElementById("messageInput");
+        document.addEventListener("DOMContentLoaded", function() {
+            // Debugging: Confirm that the script is running
+            console.log("DOMContentLoaded event fired");
 
-            // Debugging: Check if messageInput is found
+            const messageInput = document.getElementById("messageInput");
+            
+            // Check if the messageInput element exists
             if (messageInput) {
+                console.log("messageInput element found!");
+
                 // Add keydown event listener to the input field for "Enter" key
                 messageInput.addEventListener("keydown", function(event) {
                     if (event.key === "Enter") {
@@ -82,9 +86,9 @@
                     }
                 });
             } else {
-                console.error('Error: messageInput element not found!');
+                console.error("Error: messageInput element not found!");
             }
-        };
+        });
 
         // Function to send the message to the Flask server
         function sendMessage() {
@@ -137,6 +141,7 @@
 
 </body>
 </html>
+
 
 
 
