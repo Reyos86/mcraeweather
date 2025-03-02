@@ -8,32 +8,12 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__, template_folder="templates")
 
-# File to store the messages (you can use a database instead for production)
-MESSAGES_FILE = 'messages.json'
-
 # Load API keys from environment variables
 WUNDER_API_KEY = os.getenv("WUNDERGROUND_API_KEY", "497e85fd58f14e39be85fd58f1ee3956")  # Your Wunderground API key
 OWM_API_KEY = os.getenv("OPENWEATHERMAP_API_KEY", "35b5f6e19f2be4347afe5d6076b4d008")  # Your OpenWeatherMap API key
 
 BASE_URL = "https://api.weather.com/v2/pws/observations/current"
 FORECAST_URL = "https://api.weather.com/v3/wx/forecast/daily/5day"
-
-# Load messages from the messages.json file
-def load_messages():
-    try:
-        with open(messages_file, 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-# Save messages to the messages.json file
-def save_message(message):
-    messages = load_messages()
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    messages.append({'message': message, 'timestamp': timestamp})
-    with open(messages_file, 'w') as f:
-        json.dump(messages, f)
-
 
 
 # Function to convert wind direction (0-360) to cardinal direction
@@ -191,27 +171,6 @@ def get_forecast():
         "todayIcon": today_icon,
         "forecastData": forecast_data
     })
-    
-    # Chat Routes
-@app.route('/chat', methods=['GET', 'POST'])
-def chat():
-    if request.method == 'POST':
-        data = request.get_json()
-        message = data.get('message')
-        if message:
-            save_message(message)
-            return jsonify({"status": "success"})
-        else:
-            return jsonify({"status": "error", "message": "No message provided"}), 400
-    elif request.method == 'GET':
-        messages = load_messages()
-        return jsonify({"messages": messages})
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
-    
-
 
 # Function to run Flask on port 5000
 def run_on_5000():
