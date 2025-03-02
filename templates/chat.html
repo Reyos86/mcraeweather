@@ -1,35 +1,121 @@
-function sendMessage() {
-    const message = document.getElementById("messageInput").value;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        /* Basic styling for the chat */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
 
-    fetch('/chat', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ message: message })
-    }).then(response => response.json())
-      .then(data => {
-          console.log('Message Sent:', data);
-      }).catch(error => {
-          console.error('Error:', error);
-      });
-}
+        #chatContainer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            width: 300px;
+            height: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-function loadMessages() {
-    fetch('/chat')
-        .then(response => response.json())
-        .then(data => {
-            const messages = data.messages;
-            const messagesContainer = document.getElementById("messagesContainer");
-            messagesContainer.innerHTML = "";  // Clear existing messages
+        #messagesContainer {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding-right: 10px;
+        }
 
-            messages.forEach(msg => {
-                const messageDiv = document.createElement("div");
-                messageDiv.textContent = `${msg.timestamp}: ${msg.message}`;
-                messagesContainer.appendChild(messageDiv);
-            });
-        })
-        .catch(error => console.error('Error loading messages:', error));
-}
+        #messageInput {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
 
-loadMessages();
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Chat container -->
+    <div id="chatContainer">
+        <form id="chatForm" onsubmit="event.preventDefault(); sendMessage();">
+            <input type="text" id="messageInput" placeholder="Type your message..." required />
+            <button type="submit">Send</button>
+        </form>
+        <div id="messagesContainer"></div>
+    </div>
+
+    <script>
+        // Function to send the message to the Flask server
+        function sendMessage() {
+            const message = document.getElementById("messageInput").value;
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            }).then(response => response.json())
+              .then(data => {
+                  console.log('Message Sent:', data);
+                  loadMessages(); // Reload the messages after sending one
+                  document.getElementById("messageInput").value = ""; // Clear input field
+              }).catch(error => {
+                  console.error('Error:', error);
+              });
+        }
+
+        // Function to load messages from the Flask server
+        function loadMessages() {
+            fetch('/chat')
+                .then(response => response.json())
+                .then(data => {
+                    const messages = data.messages;
+                    const messagesContainer = document.getElementById("messagesContainer");
+                    messagesContainer.innerHTML = "";  // Clear existing messages
+
+                    messages.forEach(msg => {
+                        const messageDiv = document.createElement("div");
+                        messageDiv.textContent = `${msg.timestamp}: ${msg.message}`;
+                        messagesContainer.appendChild(messageDiv);
+                    });
+                })
+                .catch(error => console.error('Error loading messages:', error));
+        }
+
+        // Load messages when the page is first loaded
+        loadMessages();
+
+        // Enable sending message on "Enter" key press
+        document.getElementById("messageInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent the default action (e.g., form submission)
+                sendMessage(); // Call sendMessage function
+            }
+        });
+    </script>
+
+</body>
+</html>
